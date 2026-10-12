@@ -7,23 +7,69 @@
     
 </head>
 <body>
-    <h1>Your Projects</h1>
+    <h1>Project Page</h1>
+    <h2>Create New Project</h2>
+    <form id="create-project-form">
+        <label>Project Name</label>
+        <input type="text" id="project-name">
+
+        <label>Project Description</label>
+        <input type="text" id="project-description">
+
+        <button type="submit">Create</button>
+    </form>
+    <h2>Projects</h2>
     <div id="project-list"></div>
 </body>
 
 <script>
+    
+    const projectList=document.getElementById("project-list")
+    const create_project_form=document.getElementById("create-project-form")
+
     async function loadProjects(){
         const response=await fetch("/api/projects/");
-        const data=await response.json()
-        const projectList=document.getElementById("project-list")
+        const data=await response.json();
         
         data.forEach(function(project){
             const projectElement=document.createElement("a");
-            projectElement.innerText=project.name
-            projectElement.href="/api/projects/" + project.id + "/project-detail/"
-            projectList.append(projectElement)
+            const breakElement=document.createElement("br");
+            projectElement.innerText=project.name;
+            projectElement.href="/api/projects/" + project.id + "/project-detail/";
+            projectList.append(projectElement);
+            projectList.append(breakElement);
         });
     };
+
+    create_project_form.addEventListener("submit", async function(event){
+        event.preventDefault();
+        const projectName=document.getElementById("project-name");
+        const projectDescription=document.getElementById("project-description");
+
+        const response=await fetch("/api/projects/create/", {
+            method: "POST",
+            body: JSON.stringify({
+                name: projectName.value,
+                description: projectDescription.value
+            }),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data=await response.json();
+        if(response.ok){
+            console.log("created");
+                projectName.value="";
+                projectDescription.value="";
+                projectList.innerHTML="";
+
+                loadProjects();
+        }else{
+            console.log("error")
+        }
+
+    })
 
     loadProjects()
 </script>
